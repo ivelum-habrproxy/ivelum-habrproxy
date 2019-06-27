@@ -52,6 +52,10 @@ def complete_tag(tag, host):
             tag.attrs[processable[tag.name]] = url_parts.geturl()
 
     for content in tag.contents:
+        if isinstance(content, bs4.element.Comment):
+            content.replaceWith('<!--{}-->'.format(content))
+
+    for content in tag.contents:
         if tag.name in ['script', 'style']:
             continue
 
