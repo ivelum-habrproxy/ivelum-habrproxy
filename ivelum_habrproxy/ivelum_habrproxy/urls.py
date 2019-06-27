@@ -39,11 +39,17 @@ def complete_content(content):
 
 
 def complete_tag(tag, host):
-    if tag.name == 'a' and 'href' in tag.attrs:
-        url_parts = urlparse(tag.attrs['href'])
+    processable = {
+        'a': 'href',
+        'img': 'src',
+        'use': 'xlink:href',
+    }
+
+    if tag.name in processable and processable.get(tag.name) in tag.attrs:
+        url_parts = urlparse(tag.attrs[processable[tag.name]])
         if url_parts.netloc == SOURCE_HOST:
             url_parts = url_parts._replace(scheme='http', netloc=host)
-            tag.attrs['href'] = url_parts.geturl()
+            tag.attrs[processable[tag.name]] = url_parts.geturl()
 
     for content in tag.contents:
         if isinstance(content, bs4.element.NavigableString):
@@ -96,6 +102,12 @@ def index(request):
 
     if req.status_code != 200:
         return HttpResponse(req.text, status=req.status_code)
+
+    if request.META.get('HTTP_ACCEPT', '').split(',')[0] != 'text/html':
+        return HttpResponse(
+            req.content,
+            content_type=req.headers['Content-Type']
+        )
 
     content = complete_request_text(req.text, request.get_host())
 
