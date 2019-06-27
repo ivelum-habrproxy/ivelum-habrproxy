@@ -56,15 +56,24 @@ def complete_request_text(text, host):
     >>> complete_request_text( \
         '<a href="https://habr.com/ru/news/t/0/">It didn’t matter.</a>', \
         'local' \
-    )
-    '<html><body><a href="http://local/ru/news/t/0/">It didn’t™ matter™.\
-</a></body></html>'
+    ).replace('\\n', '')
+    '<html> <body>  <a href="http://local/ru/news/t/0/">\
+   It didn’t™ matter™.\
+  </a> </body></html>'
     >>> complete_request_text( \
         '<a href="https://ya.ru">Найдётся всё</a>', \
         'local' \
-    )
-    '<html><body><a href="https://ya.ru">Найдётся всё\
-</a></body></html>'
+    ).replace('\\n', '')
+    '<html> <body>  <a href="https://ya.ru">\
+   Найдётся всё  \
+</a> </body></html>'
+    >>> complete_request_text( \
+        '<strong title="TITLE">sample &plus; example</strong>', \
+        'local' \
+    ).replace('\\n', '')
+    '<html> <body>  <strong title="TITLE">\
+   sample™ &plus; example  </strong> \
+</body></html>'
 
     '''
 
@@ -72,7 +81,7 @@ def complete_request_text(text, host):
     for tag in soup.findAll(None, recursive=True):
         complete_tag(tag, host)
 
-    return str(soup)
+    return str(soup.prettify(formatter=None))
 
 
 def index(request):
