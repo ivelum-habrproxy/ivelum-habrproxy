@@ -63,6 +63,23 @@ def complete_tag(tag, host):
             content.replaceWith(complete_content(content))
 
 
+def has_ancestor(el, search_name):
+    while el:
+        if getattr(el, 'name', None) == search_name:
+            return True
+
+        el = getattr(el, 'parent', None)
+
+    return False
+
+
+def custom_formatter(el):
+    if has_ancestor(el, 'pre'):
+        return bs4.dammit.EntitySubstitution.substitute_html(el)
+    else:
+        return str(el)
+
+
 def complete_request_text(text, host):
     '''
 
@@ -94,7 +111,7 @@ def complete_request_text(text, host):
     for tag in soup.findAll(None, recursive=True):
         complete_tag(tag, host)
 
-    return str(soup.prettify(formatter=None))
+    return str(soup.prettify(formatter=custom_formatter))
 
 
 def index(request):
